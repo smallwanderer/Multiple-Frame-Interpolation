@@ -6,6 +6,32 @@ import tensorflow as tf
 from absl import app, flags, logging
 from typing import List
 
+
+"""
+This script processes a directory of "moving_mnist_frames_all" dataset frames, transforming them into TensorFlow TFRecord files using an Apache Beam pipeline.
+The code loads image sequences from a specified directory, filters and splits them into training and evaluation subsets, and stores the results as TFRecord files.
+It is primarily designed for semi-supervised learning applications, logging processed data to facilitate debugging.
+
+Expected Input Structure:
+- Input Directory (`moving_mnist_frames_all`): The root directory should contain folders for each sequence.
+  - Each sequence folder should include image files named sequentially, such as `frame0.png`, `frame1.png`, etc.
+  - The `_INTERPOLATOR_IMAGES_MAP` maps up to 6 frame image files per sequence for processing.
+
+Required File and Directory Format:
+- The input directory should contain folders with names corresponding to each sequence.
+- Each sequence folder should include up to 6 frame images, named according to `_INTERPOLATOR_IMAGES_MAP` (e.g., `frame0.png` to `frame5.png`).
+- All required frame images for a sequence must exist for it to be included in the output dataset.
+
+Output Structure:
+- The script outputs two types of TFRecord files: training and evaluation sets.
+- TFRecord files are split based on a predefined ratio (80% training, 20% evaluation).
+- The TFRecord files are stored in a specified output directory with file prefixes such as `mnist-tfrecord_semi_train` and `mnist-tfrecord_semi_eval`.
+- Each output dataset is saved with a specified number of shards (defined by `_NUM_SHARDS`) for efficient storage and retrieval.
+
+This code automates the transformation of raw image sequences into a standardized TFRecord format, supporting semi-supervised training and evaluation tasks.
+"""
+
+
 _INPUT_DIR = flags.DEFINE_string(
     'input_dir',
     default='moving_mnist_frames_all',
@@ -18,12 +44,15 @@ _OUTPUT_TFRECORD_FILEPATH = flags.DEFINE_string(
     help='Filepath prefix for the output TFRecord files.'
 )
 
+# Frames you want to cut
+_FRAMES = 6
+
 # Set num_shards to 1
 _NUM_SHARDS = 1
 
 # 20-frame map
 _INTERPOLATOR_IMAGES_MAP = {
-    f'frame_{i}': f'frame{i}.png' for i in range(6)
+    f'frame_{i}': f'frame{i}.png' for i in range(_FRAMES)
 }
 
 
