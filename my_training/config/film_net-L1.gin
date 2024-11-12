@@ -15,25 +15,25 @@
     model.name = 'film_net'
 
     # Option.py Model Parameter
-    film_net.pyramid_levels = 4 # 7
-    film_net.fusion_pyramid_levels = 3 # 5
-    film_net.specialized_levels = 2 # 3
-    film_net.sub_levels = 2 # 4
-    film_net.flow_convs = [3, 3, 3] # [3, 3, 3, 3]
-    film_net.flow_filters = [32, 64, 128] # [32, 64, 128, 256]
-    film_net.filters = 48 # 64
+    film_net.pyramid_levels = 4
+    film_net.fusion_pyramid_levels = 3
+    film_net.specialized_levels = 2
+    film_net.sub_levels = 2
+    film_net.flow_convs = [3, 3, 3]
+    film_net.flow_filters = [32, 64, 128]
+    film_net.filters = 48
 
     # Learning rate schedule and optimizer settings
-    training.learning_rate = 0.001 # 0.0001
-    training.learning_rate_decay_steps = 25000 # 750000
+    training.learning_rate = 0.001
+    training.learning_rate_decay_steps = 25000
     training.learning_rate_decay_rate = 0.464158
     training.learning_rate_staircase = True
-    training.num_steps = 100000 # 3000000
+    training.num_steps = 100000
 
     # in the sweep
     training_dataset.file = 'C:\\Users\\McGra\\frame-interpolation\\datasets\\moving_mnist_tfrecord\\tfrecord_6_semi\\mnist-tfrecord_semi_train@1'
     training_dataset.batch_size = 8
-    training_dataset.crop_sizes = 16 # 256
+    training_dataset.crop_sizes = 16
 
     # Evaluate Datasets
     eval_datasets.files = ['C:\\Users\\McGra\\frame-interpolation\\datasets\\moving_mnist_tfrecord\\tfrecord_6_semi\\mnist-tfrecord_semi_train@1']
