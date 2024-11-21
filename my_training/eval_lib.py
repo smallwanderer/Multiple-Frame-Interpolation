@@ -81,64 +81,6 @@ def eval_loop(strategy: tf.distribute.Strategy,
             step_outputs = _distributed_eval_step(strategy, batch, model, metrics, checkpoint_step)
             extra_images = step_outputs['extra_images']
 
-            # 개별 이미지에 클리핑 적용
-            try:
-                extra_images_clipped = {key: tf.clip_by_value(image, 0., 1.) for key, image in extra_images.items()}
-            except Exception as e:
-                logging.error(f'Error during clipping: {e}')
-                logging.info(f'Failed clipping structure: {extra_images}')
-                raise  # Re-raise to stop execution and debug further
-
-            # 주기적으로 로그 출력
-            if batch_idx % 10 == 0:
-                logging.info('Evaluating batch %s', batch_idx)
-            batch_idx += 1
-
-            # 요약된 중간 프레임 시각화
-            if batch_idx <= max_batches_to_summarize:
-                prefix = f'{dataset_name}/eval_{batch_idx}'
-                try:
-                    combined_images = summerize_images_tensors(extra_images_clipped)  # 클리핑된 이미지를 사용
-                    _summarize_image_tensors({'Predicted Frames Summary': combined_images}, prefix,
-                                             step=checkpoint_step)
-                except Exception as e:
-                    logging.error(f'Error during tensor summarization: {e}')
-                    logging.info(f'Failed summarization structure: {extra_images_clipped}')
-                    raise  # Re-raise to stop execution and debug further
-
-        # 메트릭 요약 기록
-        for name, metric in metrics.items():
-            tf.summary.scalar(f'{dataset_name}/{name}', metric.result(), step=checkpoint_step)
-            logging.info('Step {:2}, {} {}'.format(checkpoint_step, f'{dataset_name}/{name}', metric.result().numpy()))
-            metric.reset_states()
-
-
-def eval_loop(strategy: tf.distribute.Strategy,
-              eval_base_folder: str,
-              model: tf.keras.Model,
-              metrics: Dict[str, tf.keras.metrics.Metric],
-              datasets: Mapping[str, tf.data.Dataset],
-              summary_writer: tf.summary.SummaryWriter,
-              checkpoint_step: int):
-    """Eval loop that supports summarizing multiple frame predictions with debugging info."""
-    logging.info('Saving eval summaries to: %s...', eval_base_folder)
-    summary_writer.set_as_default()
-
-    for dataset_name, dataset in datasets.items():
-        for metric in metrics.values():
-            metric.reset_states()
-
-        logging.info('Loading %s testing data ...', dataset_name)
-        dataset = strategy.experimental_distribute_dataset(dataset)
-
-        logging.info('Evaluating %s ...', dataset_name)
-        batch_idx = 0
-        max_batches_to_summarize = 10
-
-        for batch in dataset:
-            step_outputs = _distributed_eval_step(strategy, batch, model, metrics, checkpoint_step)
-            extra_images = step_outputs['extra_images']
-
 
             # 클리핑 적용: 중간 프레임 및 워핑된 이미지에만 적용
             extra_images_clipped = {
